@@ -1,65 +1,103 @@
-import { DurableObject } from "cloudflare:workers";
+import Customer from './customer';
+import { GetAllCustomerRequest, PaginationType, SortType } from './interface';
+import CustomerService from './service';
+import bcyrpt from 'bcryptjs';
 
-/**
- * Welcome to Cloudflare Workers! This is your first Durable Objects application.
- *
- * - Run `npm run dev` in your terminal to start a development server
- * - Open a browser tab at http://localhost:8787/ to see your Durable Object in action
- * - Run `npm run deploy` to publish your application
- *
- * Bind resources to your worker in `wrangler.jsonc`. After adding bindings, a type definition for the
- * `Env` object can be regenerated with `npm run cf-typegen`.
- *
- * Learn more at https://developers.cloudflare.com/durable-objects
- */
-
-
-/** A Durable Object's behavior is defined in an exported Javascript class */
-export class MyDurableObject extends DurableObject {
-	/**
-	 * The constructor is invoked once upon creation of the Durable Object, i.e. the first call to
-	 * 	`DurableObjectStub::get` for a given identifier (no-op constructors can be omitted)
-	 *
-	 * @param ctx - The interface for interacting with Durable Object state
-	 * @param env - The interface to reference bindings declared in wrangler.jsonc
-	 */
-	constructor(ctx: DurableObjectState, env: Env) {
-		super(ctx, env);
-	}
-
-	/**
-	 * The Durable Object exposes an RPC method sayHello which will be invoked when a Durable
-	 *  Object instance receives a request from a Worker via the same method invocation on the stub
-	 *
-	 * @param name - The name provided to a Durable Object instance from a Worker
-	 * @returns The greeting to be sent back to the Worker
-	 */
-	async sayHello(name: string): Promise<string> {
-		return `Hello, ${name}!`;
-	}
+export interface Env {
+	DB: D1Database;
 }
 
 export default {
-	/**
-	 * This is the standard fetch handler for a Cloudflare Worker
-	 *
-	 * @param request - The request submitted to the Worker from the client
-	 * @param env - The interface to reference bindings declared in wrangler.jsonc
-	 * @param ctx - The execution context of the Worker
-	 * @returns The response to be sent back to the client
-	 */
 	async fetch(request, env, ctx): Promise<Response> {
-		// Create a stub to open a communication channel with the Durable Object
-		// instance named "foo".
-		//
-		// Requests from all Workers to the Durable Object instance named "foo"
-		// will go to a single remote Durable Object instance.
-		const stub = env.MY_DURABLE_OBJECT.getByName("foo");
+		const { pathname, searchParams } = new URL(request.url);
 
-		// Call the `sayHello()` RPC method on the stub to invoke the method on
-		// the remote Durable Object instance.
-		const greeting = await stub.sayHello("world");
+		if (pathname === '/getCustomerByEmail' && request.method == 'GET') {
+			const email = searchParams.get('email');
+			if (!email) {
+				throw new Error('Email required');
+			}
 
-		return new Response(greeting);
+			if (!email.includes('@')) {
+				throw new Error('Invalid email');
+			}
+
+			const authentication = new CustomerService(env.DB);
+			const response = await authentication.findCustomerByEmail(email);
+
+			return Response.json(response);
+		} else if (pathname === '/getAllCustomer' && request.method == 'POST') {
+			type GetAllCustomerRequest_ = Omit<GetAllCustomerRequest, 'pagination'> & {
+				pagination: PaginationType | undefined;
+			};
+
+			let body: GetAllCustomerRequest_ | undefined;
+
+			try {
+				body = await request.json();
+			} catch {
+				body = undefined;
+			}
+
+			let pagination: PaginationType = {
+				page: 1,
+				limit: 10,
+			};
+
+			let sort: SortType = {
+				column: 'created_at',
+				direction: 'asc',
+			};
+
+			if (body && body.pagination) {
+				if (body.pagination.page > 0) pagination.page = body.pagination.page;
+				if (body.pagination.limit > 0) pagination.limit = body.pagination.limit;
+			}
+
+			if (body && body.sort) {
+				if (body.sort.column) sort.column = body.sort.column;
+				if (body.sort.direction) sort.direction = body.sort.direction;
+			}
+
+			const authentication = new CustomerService(env.DB);
+			const response = await authentication.findAllCustomer({ pagination, sort });
+
+			return Response.json(response);
+		} else if (pathname == '/createCustomer' && request.method == 'POST') {
+			const body = await request.json();
+
+			let customer = new Customer();
+			Object.assign(customer, body);
+
+			const validation = customer.validateObject();
+			if (validation) {
+				return validation; // Return error response
+			}
+
+			customer['password'] = await bcyrpt.hash(customer.password, 10);
+
+			const authentication = new CustomerService(env.DB);
+			const response = await authentication.saveCustomer(customer);
+
+			return Response.json(response);
+		} else if (pathname == '/updateCustomer' && request.method == 'PATCH') {
+			const body = await request.json();
+
+			let customer = new Customer();
+			Object.assign(customer, body);
+
+			const validation = customer.validateObject();
+			if (validation) {
+				return validation; // Return response
+			}
+
+			customer['password'] = await bcyrpt.hash(customer.password, 10);
+
+			const authentication = new CustomerService(env.DB);
+			const response = await authentication.updateCustomer(customer);
+
+			return Response.json(response);
+		}
+
+		return Response.json({});
 	},
 } satisfies ExportedHandler<Env>;
