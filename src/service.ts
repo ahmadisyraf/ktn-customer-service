@@ -42,7 +42,7 @@ export default class CustomerService {
 			const customer = new Customer();
 			Object.assign(customer, result);
 
-			return customer.toJSON();
+			return customer.toJSON().excludePassword();
 		} catch (error) {
 			throw new Error('Internal server error', { cause: error });
 		}
