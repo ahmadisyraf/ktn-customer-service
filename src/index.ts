@@ -24,7 +24,7 @@ export default {
 			const authentication = new CustomerService(env.DB);
 			const response = await authentication.findCustomerByEmail(email);
 
-			return Response.json(response);
+			return Response.json(response, { status: 200 });
 		} else if (pathname === '/getAllCustomer' && request.method == 'POST') {
 			type GetAllCustomerRequest_ = Omit<GetAllCustomerRequest, 'pagination'> & {
 				pagination: PaginationType | undefined;
@@ -61,7 +61,7 @@ export default {
 			const authentication = new CustomerService(env.DB);
 			const response = await authentication.findAllCustomer({ pagination, sort });
 
-			return Response.json(response);
+			return Response.json(response, { status: 200 });
 		} else if (pathname == '/createCustomer' && request.method == 'POST') {
 			const body = await request.json();
 
@@ -78,7 +78,7 @@ export default {
 			const authentication = new CustomerService(env.DB);
 			const response = await authentication.saveCustomer(customer);
 
-			return Response.json(response);
+			return Response.json(response, { status: 201 });
 		} else if (pathname == '/updateCustomer' && request.method == 'PATCH') {
 			const body = await request.json();
 
@@ -95,7 +95,7 @@ export default {
 			const authentication = new CustomerService(env.DB);
 			const response = await authentication.updateCustomer(customer);
 
-			return Response.json(response);
+			return Response.json(response, { status: 200 });
 		}
 
 		return Response.json({});
