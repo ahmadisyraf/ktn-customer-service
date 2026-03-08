@@ -1,3 +1,4 @@
+import { CustomerBase, CustomerToJSON } from './interface';
 import { isEmpty } from './utils';
 
 export default class Customer {
@@ -111,17 +112,27 @@ export default class Customer {
 		return JSON.stringify(this._dynamicEntity);
 	}
 
-	/**
-	 * Convert database field name type to front end field name type
-	 */
-	toJSON() {
-		return {
+	toJSON(): CustomerToJSON {
+		let defaultObj = {
 			firstName: this._firstName,
 			lastName: this._lastName,
 			email: this._email,
+			password: this._password,
 			dynamicEntity: this._dynamicEntity,
 			createdAt: this._createdAt,
 			updatedAt: this._updatedAt,
+		};
+
+		return {
+			includePassword() {
+				return defaultObj;
+			},
+			excludePassword() {
+				let defaultObjClone = JSON.parse(JSON.stringify(defaultObj));
+				delete defaultObjClone['password'];
+
+				return defaultObj;
+			},
 		};
 	}
 
@@ -136,10 +147,6 @@ export default class Customer {
 
 		if (isEmpty(this._email)) {
 			return Response.json('email required', { status: 400 });
-		}
-
-		if (isEmpty(this._password)) {
-			return Response.json('password required', { status: 400 });
 		}
 	}
 }
