@@ -1,4 +1,4 @@
-import { CustomerBase, CustomerToJSON } from './interface';
+import { CustomerBase, CustomerBaseWithoutPassword, CustomerToJSON } from './interface';
 import { isEmpty } from './utils';
 
 export default class Customer {
@@ -12,104 +12,56 @@ export default class Customer {
 
 	constructor() {}
 
-	/**
-	 * Below are for React JS field.
-	 */
-	set firstName(value) {
-		this._firstName = value;
-	}
 	get firstName() {
 		return this._firstName;
-	}
-
-	set lastName(value) {
-		this._lastName = value;
 	}
 	get lastName() {
 		return this._lastName;
 	}
-	set email(value) {
-		this._email = value;
-	}
 	get email() {
 		return this._email;
-	}
-
-	set password(value) {
-		this._password = value;
 	}
 	get password() {
 		return this._password;
 	}
-
-	set createdAt(value) {
-		this._createdAt = value;
+	set password(value: string) {
+		this._password = value;
 	}
 	get createdAt() {
 		return this._createdAt;
 	}
-
-	set updatedAt(value) {
-		this._updatedAt = value;
-	}
 	get updatedAt() {
 		return this._updatedAt;
-	}
-
-	set dynamicEntity(value) {
-		this._dynamicEntity = value;
 	}
 	get dynamicEntity() {
 		return this._dynamicEntity;
 	}
 
-	/**
-	 * Below for database field
-	 */
-	set first_name(value) {
-		this._firstName = value;
-	}
-	get first_name() {
-		return this._firstName;
-	}
+	fromDB(row: any): this {
+		this._firstName = row.first_name ?? '';
+		this._lastName = row.last_name ?? '';
+		this._email = row.email ?? '';
+		this._password = row.password_hash ?? '';
 
-	set last_name(value) {
-		this._lastName = value;
-	}
-	get last_name() {
-		return this._lastName;
-	}
-
-	set password_hash(value) {
-		this._password = value;
-	}
-	get password_hash() {
-		return this._password;
-	}
-
-	set created_at(value) {
-		this._createdAt = value;
-	}
-	get created_at() {
-		return this._createdAt;
-	}
-
-	set updated_at(value) {
-		this._updatedAt = value;
-	}
-	get updated_at() {
-		return this._updatedAt;
-	}
-
-	set dynamic_entity(value: string | null) {
 		try {
-			this._dynamicEntity = value ? JSON.parse(value) : {};
-		} catch (e) {
-			this._dynamicEntity = {};
+			this._dynamicEntity = typeof row.dynamic_entity === 'string' ? JSON.parse(row.dynamic_entity) : row.dynamic_entity;
+		} catch {
+			this._dynamicEntity = undefined;
 		}
+
+		this._createdAt = row.created_at ?? undefined;
+		this._updatedAt = row.updated_at ?? undefined;
+
+		return this;
 	}
-	get dynamic_entity() {
-		return JSON.stringify(this._dynamicEntity);
+
+	fromJSON(data: any): this {
+		this._firstName = data.firstName || '';
+		this._lastName = data.lastName || '';
+		this._email = data.email || '';
+		this._password = data.password || '';
+		this._dynamicEntity = data.dynamicEntity;
+		return this;
 	}
 
 	toJSON(): CustomerToJSON {
@@ -124,29 +76,29 @@ export default class Customer {
 		};
 
 		return {
-			includePassword() {
+			includePassword(): CustomerBase {
 				return defaultObj;
 			},
-			excludePassword() {
+			excludePassword(): CustomerBaseWithoutPassword {
 				let defaultObjClone = JSON.parse(JSON.stringify(defaultObj));
-				delete defaultObjClone['password'];
 
-				return defaultObj;
+				delete defaultObjClone.password;
+
+				return defaultObjClone;
 			},
 		};
 	}
 
 	validateObject() {
 		if (isEmpty(this._firstName)) {
-			return Response.json('firstName required', { status: 400 });
+			return Response.json({ error: 'firstName required' }, { status: 400 });
 		}
-
 		if (isEmpty(this._lastName)) {
-			return Response.json('lastName required', { status: 400 });
+			return Response.json({ error: 'lastName required' }, { status: 400 });
 		}
-
 		if (isEmpty(this._email)) {
-			return Response.json('email required', { status: 400 });
+			return Response.json({ error: 'email required' }, { status: 400 });
 		}
+		return null;
 	}
 }

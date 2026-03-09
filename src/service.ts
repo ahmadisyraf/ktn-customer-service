@@ -21,7 +21,7 @@ export default class CustomerService {
 		try {
 			const result = await this.database
 				.prepare(sql)
-				.bind(customer.firstName, customer.lastName, customer.email, customer.password_hash, customer.email)
+				.bind(customer.firstName, customer.lastName, customer.email, customer.password, customer.email)
 				.run();
 
 			return result.success && result.meta.rows_written > 0;
@@ -40,7 +40,7 @@ export default class CustomerService {
 			}
 
 			const customer = new Customer();
-			Object.assign(customer, result);
+			customer.fromDB(result);
 
 			return customer.toJSON().excludePassword();
 		} catch (error) {
@@ -57,10 +57,7 @@ export default class CustomerService {
 					WHERE email = ?`;
 
 		try {
-			const result = await this.database
-				.prepare(sql)
-				.bind(customer.firstName, customer.lastName, customer.password_hash, customer.email)
-				.run();
+			const result = await this.database.prepare(sql).bind(customer.firstName, customer.lastName, customer.password, customer.email).run();
 
 			return result.success && result.meta.changes > 0;
 		} catch (error) {
@@ -77,7 +74,7 @@ export default class CustomerService {
 		try {
 			const { results } = await this.database.prepare(sql).bind(limit, offset).all();
 
-			if (!results || results.length == 0) {
+			if (!results || results.length === 0) {
 				return {
 					data: [],
 					page,
@@ -87,9 +84,9 @@ export default class CustomerService {
 
 			const customers = results.map((result) => {
 				const customer = new Customer();
-				Object.assign(customer, result);
+				customer.fromDB(result);
 
-				return customer;
+				return customer.toJSON().excludePassword();
 			});
 
 			return {

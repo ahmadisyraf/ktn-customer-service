@@ -17,4 +17,7 @@
 		"enabled": true,
 	},
 	"compatibility_flags": ["nodejs_compat"],
+	"vars": {
+		"GATEWAY_SECRET_KEY": "lu&i6vywoM@s@l0y",
+	},
 }

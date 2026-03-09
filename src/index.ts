@@ -5,11 +5,20 @@ import bcyrpt from 'bcryptjs';
 
 export interface Env {
 	DB: D1Database;
+	GATEWAY_SECRET_KEY: string;
 }
 
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
-		const { pathname, searchParams } = new URL(request.url);
+		let { pathname, searchParams } = new URL(request.url);
+		const gatewaySecret = request.headers.get('x-gateway-secret');
+
+		if (gatewaySecret) {
+			if (gatewaySecret !== env.GATEWAY_SECRET_KEY) {
+				return Response.json('Unauthorized', { status: 401 });
+			}
+			pathname = pathname.replace('/api/customer', '');
+		}
 
 		if (pathname === '/getCustomerByEmail' && request.method == 'GET') {
 			const email = searchParams.get('email');
@@ -66,14 +75,14 @@ export default {
 			const body = await request.json();
 
 			let customer = new Customer();
-			Object.assign(customer, body);
+			customer.fromJSON(body);
 
 			const validation = customer.validateObject();
 			if (validation) {
 				return validation; // Return error response
 			}
 
-			customer['password'] = await bcyrpt.hash(customer.password, 10);
+			customer.password = await bcyrpt.hash(customer.password, 10);
 
 			const authentication = new CustomerService(env.DB);
 			const response = await authentication.saveCustomer(customer);
@@ -83,14 +92,14 @@ export default {
 			const body = await request.json();
 
 			let customer = new Customer();
-			Object.assign(customer, body);
+			customer.fromJSON(body);
 
 			const validation = customer.validateObject();
 			if (validation) {
 				return validation; // Return response
 			}
 
-			customer['password'] = await bcyrpt.hash(customer.password, 10);
+			customer.password = await bcyrpt.hash(customer.password, 10);
 
 			const authentication = new CustomerService(env.DB);
 			const response = await authentication.updateCustomer(customer);
@@ -98,6 +107,6 @@ export default {
 			return Response.json(response, { status: 200 });
 		}
 
-		return Response.json({});
+		return Response.json('Hello world');
 	},
 } satisfies ExportedHandler<Env>;
