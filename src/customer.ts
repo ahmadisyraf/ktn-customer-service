@@ -25,7 +25,7 @@ export default class Customer {
 		return this._password;
 	}
 	set password(value: string) {
-		this._password = value;
+		this._password = value; // Only password can be set. Hashing purpose
 	}
 	get createdAt() {
 		return this._createdAt;

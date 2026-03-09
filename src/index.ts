@@ -23,11 +23,11 @@ export default {
 		if (pathname === '/getCustomerByEmail' && request.method == 'GET') {
 			const email = searchParams.get('email');
 			if (!email) {
-				throw new Error('Email required');
+				return Response.json('Email required!', { status: 400 });
 			}
 
 			if (!email.includes('@')) {
-				throw new Error('Invalid email');
+				return Response.json('Invalid email!', { status: 400 });
 			}
 
 			const authentication = new CustomerService(env.DB);
