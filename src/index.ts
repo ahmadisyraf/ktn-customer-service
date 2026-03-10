@@ -13,6 +13,11 @@ export default {
 		let { pathname, searchParams } = new URL(request.url);
 		const gatewaySecret = request.headers.get('x-gateway-secret');
 
+		// Uncomment this if want to connect directly with customer service
+		if (!gatewaySecret) {
+			return Response.json('Unauthorized', { status: 401 });
+		}
+
 		if (gatewaySecret) {
 			if (gatewaySecret !== env.GATEWAY_SECRET_KEY) {
 				return Response.json('Unauthorized', { status: 401 });
@@ -107,6 +112,6 @@ export default {
 			return Response.json(response, { status: 200 });
 		}
 
-		return Response.json('Hello world');
+		return Response.json('Not found', { status: 404 });
 	},
 } satisfies ExportedHandler<Env>;
