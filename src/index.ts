@@ -27,6 +27,8 @@ export default {
 
 		if (pathname === '/getCustomerByEmail' && request.method == 'GET') {
 			const email = searchParams.get('email');
+			const includePassword = searchParams.get('includePassword');
+
 			if (!email) {
 				return Response.json('Email required!', { status: 400 });
 			}
@@ -36,7 +38,7 @@ export default {
 			}
 
 			const authentication = new CustomerService(env.DB);
-			const response = await authentication.findCustomerByEmail(email);
+			const response = await authentication.findCustomerByEmail(email, includePassword);
 
 			return Response.json(response, { status: 200 });
 		} else if (pathname === '/getAllCustomer' && request.method == 'POST') {

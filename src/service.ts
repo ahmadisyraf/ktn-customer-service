@@ -30,7 +30,7 @@ export default class CustomerService {
 		}
 	}
 
-	async findCustomerByEmail(email: string) {
+	async findCustomerByEmail(email: string, includePassword: string | null) {
 		const sql = 'SELECT * FROM customers WHERE email = ? LIMIT 1';
 		try {
 			let result = await this.database.prepare(sql).bind(email).first();
@@ -41,6 +41,10 @@ export default class CustomerService {
 
 			const customer = new Customer();
 			customer.fromDB(result);
+
+			if (includePassword && includePassword == 'true') {
+				return customer.toJSON().includePassword();
+			}
 
 			return customer.toJSON().excludePassword();
 		} catch (error) {
