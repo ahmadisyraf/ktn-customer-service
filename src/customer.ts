@@ -1,3 +1,4 @@
+import { HttpStatus } from './httpStatus';
 import { CustomerBase, CustomerBaseWithoutPassword, CustomerToJSON } from './interface';
 import { isEmpty } from './utils';
 
@@ -91,13 +92,13 @@ export default class Customer {
 
 	validateObject() {
 		if (isEmpty(this._firstName)) {
-			return Response.json({ error: 'firstName required' }, { status: 400 });
+			return Response.json({ error: 'firstName required' }, { status: HttpStatus.BadRequest });
 		}
 		if (isEmpty(this._lastName)) {
-			return Response.json({ error: 'lastName required' }, { status: 400 });
+			return Response.json({ error: 'lastName required' }, { status: HttpStatus.BadRequest });
 		}
 		if (isEmpty(this._email)) {
-			return Response.json({ error: 'email required' }, { status: 400 });
+			return Response.json({ error: 'email required' }, { status: HttpStatus.BadRequest });
 		}
 		return null;
 	}

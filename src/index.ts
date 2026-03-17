@@ -1,4 +1,5 @@
 import Customer from './customer';
+import { HttpStatus } from './httpStatus';
 import { GetAllCustomerRequest, PaginationType, SortType } from './interface';
 import CustomerService from './service';
 import bcyrpt from 'bcryptjs';
@@ -13,14 +14,13 @@ export default {
 		let { pathname, searchParams } = new URL(request.url);
 		const gatewaySecret = request.headers.get('x-gateway-secret');
 
-		// Uncomment this if want to connect directly with customer service
 		if (!gatewaySecret) {
-			return Response.json('Unauthorized', { status: 401 });
+			return Response.json('Unauthorized', { status: HttpStatus.Unauthorized });
 		}
 
 		if (gatewaySecret) {
 			if (gatewaySecret !== env.GATEWAY_SECRET_KEY) {
-				return Response.json('Unauthorized', { status: 401 });
+				return Response.json('Unauthorized', { status: HttpStatus.Unauthorized });
 			}
 			pathname = pathname.replace('/api/customer', '');
 		}
@@ -30,17 +30,17 @@ export default {
 			const includePassword = searchParams.get('includePassword');
 
 			if (!email) {
-				return Response.json('Email required!', { status: 400 });
+				return Response.json('Email required!', { status: HttpStatus.BadRequest });
 			}
 
 			if (!email.includes('@')) {
-				return Response.json('Invalid email!', { status: 400 });
+				return Response.json('Invalid email!', { status: HttpStatus.BadRequest });
 			}
 
 			const authentication = new CustomerService(env.DB);
 			const response = await authentication.findCustomerByEmail(email, includePassword);
 
-			return Response.json(response, { status: 200 });
+			return Response.json(response, { status: HttpStatus.OK });
 		} else if (pathname === '/getAllCustomer' && request.method == 'POST') {
 			type GetAllCustomerRequest_ = Omit<GetAllCustomerRequest, 'pagination'> & {
 				pagination: PaginationType | undefined;
@@ -77,7 +77,7 @@ export default {
 			const authentication = new CustomerService(env.DB);
 			const response = await authentication.findAllCustomer({ pagination, sort });
 
-			return Response.json(response, { status: 200 });
+			return Response.json(response, { status: HttpStatus.OK });
 		} else if (pathname == '/createCustomer' && request.method == 'POST') {
 			const body = await request.json();
 
@@ -94,7 +94,7 @@ export default {
 			const authentication = new CustomerService(env.DB);
 			const response = await authentication.saveCustomer(customer);
 
-			return Response.json(response, { status: 201 });
+			return Response.json(response, { status: HttpStatus.Created });
 		} else if (pathname == '/updateCustomer' && request.method == 'PATCH') {
 			const body = await request.json();
 
@@ -111,9 +111,9 @@ export default {
 			const authentication = new CustomerService(env.DB);
 			const response = await authentication.updateCustomer(customer);
 
-			return Response.json(response, { status: 200 });
+			return Response.json(response, { status: HttpStatus.OK });
 		}
 
-		return Response.json('Not found', { status: 404 });
+		return Response.json('Not found', { status: HttpStatus.NotFound });
 	},
 } satisfies ExportedHandler<Env>;

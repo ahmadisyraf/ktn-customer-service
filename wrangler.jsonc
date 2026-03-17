@@ -6,6 +6,10 @@
 	"assets": {
 		"directory": "./public",
 	},
+	"observability": {
+		"enabled": true,
+	},
+	"compatibility_flags": ["nodejs_compat"],
 	"d1_databases": [
 		{
 			"binding": "DB",
@@ -13,8 +17,24 @@
 			"database_id": "9f22b5ab-8647-492e-8b06-4bf33587f78e",
 		},
 	],
-	"observability": {
-		"enabled": true,
+	"vars": {
+		"GATEWAY_HOST": "https://ktn-gateway.isyrafmagic.workers.dev",
+		"GATEWAY_SECRET_KEY": "lu&i6vywoM@s@l0y",
+		"ENVIRONMENT": "production",
 	},
-	"compatibility_flags": ["nodejs_compat"],
+	"env": {
+		"development": {
+			"d1_databases": [
+				{
+					"binding": "DB",
+					"database_name": "mydb",
+				},
+			],
+			"vars": {
+				"GATEWAY_HOST": "http://localhost:8000",
+				"GATEWAY_SECRET_KEY": "lu&i6vywoM@s@l0y",
+				"ENVIRONMENT": "development",
+			},
+		},
+	},
 }
