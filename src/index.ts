@@ -15,12 +15,12 @@ export default {
 		const gatewaySecret = request.headers.get('x-gateway-secret');
 
 		if (!gatewaySecret) {
-			return Response.json('Unauthorized', { status: HttpStatus.Unauthorized });
+			return Response.json('Fobidden', { status: HttpStatus.Forbidden });
 		}
 
 		if (gatewaySecret) {
 			if (gatewaySecret !== env.GATEWAY_SECRET_KEY) {
-				return Response.json('Unauthorized', { status: HttpStatus.Unauthorized });
+				return Response.json('Fobidden', { status: HttpStatus.Forbidden });
 			}
 			pathname = pathname.replace('/api/customer', '');
 		}
