@@ -19,6 +19,8 @@ CREATE TABLE
         id INTEGER PRIMARY KEY,
         business_name TEXT NOT NULL,
         business_slug TEXT NOT NULL UNIQUE,
+        business_address TEXT NOT NULL,
+        business_category TEXT NOT NULL,
         dynamic_entity TEXT CHECK (json_valid (dynamic_entity)),
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
