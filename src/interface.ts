@@ -31,3 +31,6 @@ export interface CustomerToJSON {
 	includePassword(): CustomerBase;
 	excludePassword(): CustomerBaseWithoutPassword;
 }
+
+export type Role = "ADMIN" | "USER" | "MERCHANT";
+

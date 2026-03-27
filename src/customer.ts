@@ -1,5 +1,5 @@
 import { HttpStatus } from './httpStatus';
-import { CustomerBase, CustomerBaseWithoutPassword, CustomerToJSON } from './interface';
+import { Role, CustomerBase, CustomerBaseWithoutPassword, CustomerToJSON } from './interface';
 import { isEmpty } from './utils';
 
 export default class Customer {
@@ -7,6 +7,7 @@ export default class Customer {
 	private _lastName: string = '';
 	private _email: string = '';
 	private _password: string = '';
+	private _role: Role = 'USER';
 	private _dynamicEntity: Record<string, any> | undefined;
 	private _createdAt: string | undefined;
 	private _updatedAt: string | undefined;
@@ -28,6 +29,9 @@ export default class Customer {
 	set password(value: string) {
 		this._password = value; // Only password can be set. Hashing purpose
 	}
+	get role() {
+		return this._role;
+	}
 	get createdAt() {
 		return this._createdAt;
 	}
@@ -43,6 +47,7 @@ export default class Customer {
 		this._lastName = row.last_name ?? '';
 		this._email = row.email ?? '';
 		this._password = row.password_hash ?? '';
+		this._role = row.role ?? '';
 
 		try {
 			this._dynamicEntity = typeof row.dynamic_entity === 'string' ? JSON.parse(row.dynamic_entity) : row.dynamic_entity;
@@ -61,6 +66,7 @@ export default class Customer {
 		this._lastName = data.lastName || '';
 		this._email = data.email || '';
 		this._password = data.password || '';
+		this._role = data.role || '';
 		this._dynamicEntity = data.dynamicEntity;
 		return this;
 	}
@@ -71,6 +77,7 @@ export default class Customer {
 			lastName: this._lastName,
 			email: this._email,
 			password: this._password,
+			role: this._role,
 			dynamicEntity: this._dynamicEntity,
 			createdAt: this._createdAt,
 			updatedAt: this._updatedAt,
