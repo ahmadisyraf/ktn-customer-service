@@ -37,10 +37,15 @@ export default {
 				return Response.json('Invalid email!', { status: HttpStatus.BadRequest });
 			}
 
-			const customerService = new CustomerService(env.DB);
-			const response = await customerService.findCustomerByEmail(email, includePassword);
+			try {
+				const customerService = new CustomerService(env.DB);
+				const response = await customerService.findCustomerByEmail(email, includePassword);
 
-			return Response.json(response, { status: HttpStatus.OK });
+				return Response.json(response, { status: HttpStatus.OK });
+			} catch (error) {
+				return Response.json(error, { status: HttpStatus.InternalServerError});
+			}
+
 		} else if (pathname === '/getAllCustomer' && request.method == 'POST') {
 			type GetAllCustomerRequest_ = Omit<GetAllCustomerRequest, 'pagination'> & {
 				pagination: PaginationType | undefined;
@@ -74,10 +79,14 @@ export default {
 				if (body.sort.direction) sort.direction = body.sort.direction;
 			}
 
-			const customerService = new CustomerService(env.DB);
-			const response = await customerService.findAllCustomer({ pagination, sort });
+			try {
+				const customerService = new CustomerService(env.DB);
+				const response = await customerService.findAllCustomer({ pagination, sort });
 
-			return Response.json(response, { status: HttpStatus.OK });
+				return Response.json(response, { status: HttpStatus.OK });
+			} catch (error) {
+				return Response.json(error, { status: HttpStatus.InternalServerError });
+			}
 		} else if (pathname == '/createCustomer' && request.method == 'POST') {
 			const body = await request.json();
 
@@ -92,10 +101,14 @@ export default {
 
 			customer.password = await bcyrpt.hash(customer.password, 10);
 
-			const customerService = new CustomerService(env.DB);
-			const response = await customerService.saveCustomer(customer);
+			try {
+				const customerService = new CustomerService(env.DB);
+				const response = await customerService.saveCustomer(customer);
 
-			return Response.json(response, { status: HttpStatus.Created });
+				return Response.json(response, { status: HttpStatus.Created });
+			} catch (error) {
+				return Response.json(error, { status: HttpStatus.InternalServerError });
+			}
 		} else if (pathname == '/updateCustomer' && request.method == 'PATCH') {
 			const body = await request.json();
 
@@ -113,10 +126,14 @@ export default {
 
 			customer.password = await bcyrpt.hash(customer.password, 10);
 
-			const customerService = new CustomerService(env.DB);
-			const response = await customerService.updateCustomer(customer);
+			try {
+				const customerService = new CustomerService(env.DB);
+				const response = await customerService.updateCustomer(customer);
 
-			return Response.json(response, { status: HttpStatus.OK });
+				return Response.json(response, { status: HttpStatus.OK });
+			} catch (error) {
+				return Response.json(error, { status: HttpStatus.InternalServerError });
+			}
 		}
 
 		return Response.json('Not found', { status: HttpStatus.NotFound });
