@@ -92,14 +92,13 @@ export default class Customer {
 
 	validateObject() {
 		if (isEmpty(this._firstName)) {
-			return Response.json({ error: 'firstName required' }, { status: HttpStatus.BadRequest });
-		}
+			throw new Error('First name required!'); 
+		} 
 		if (isEmpty(this._lastName)) {
-			return Response.json({ error: 'lastName required' }, { status: HttpStatus.BadRequest });
+			throw new Error('Last name required!');
 		}
 		if (isEmpty(this._email)) {
-			return Response.json({ error: 'email required' }, { status: HttpStatus.BadRequest });
+			throw new Error('Email required!');
 		}
-		return null;
 	}
 }

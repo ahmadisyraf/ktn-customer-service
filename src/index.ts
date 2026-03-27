@@ -84,9 +84,10 @@ export default {
 			let customer = new Customer();
 			customer.fromJSON(body);
 
-			const validation = customer.validateObject();
-			if (validation) {
-				return validation; // Return error response
+			try {
+				customer.validateObject();
+			} catch (error) {
+				return Response.json(error, { status: HttpStatus.BadRequest });
 			}
 
 			customer.password = await bcyrpt.hash(customer.password, 10);
@@ -101,9 +102,11 @@ export default {
 			let customer = new Customer();
 			customer.fromJSON(body);
 
-			const validation = customer.validateObject();
-			if (validation) {
-				return validation; // Return response
+
+			try {
+				customer.validateObject();
+			} catch (error) {
+				return Response.json(error, { status: HttpStatus.BadRequest });
 			}
 
 			customer.password = await bcyrpt.hash(customer.password, 10);
