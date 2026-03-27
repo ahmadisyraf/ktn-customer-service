@@ -37,8 +37,8 @@ export default {
 				return Response.json('Invalid email!', { status: HttpStatus.BadRequest });
 			}
 
-			const authentication = new CustomerService(env.DB);
-			const response = await authentication.findCustomerByEmail(email, includePassword);
+			const customerService = new CustomerService(env.DB);
+			const response = await customerService.findCustomerByEmail(email, includePassword);
 
 			return Response.json(response, { status: HttpStatus.OK });
 		} else if (pathname === '/getAllCustomer' && request.method == 'POST') {
@@ -74,8 +74,8 @@ export default {
 				if (body.sort.direction) sort.direction = body.sort.direction;
 			}
 
-			const authentication = new CustomerService(env.DB);
-			const response = await authentication.findAllCustomer({ pagination, sort });
+			const customerService = new CustomerService(env.DB);
+			const response = await customerService.findAllCustomer({ pagination, sort });
 
 			return Response.json(response, { status: HttpStatus.OK });
 		} else if (pathname == '/createCustomer' && request.method == 'POST') {
@@ -92,8 +92,8 @@ export default {
 
 			customer.password = await bcyrpt.hash(customer.password, 10);
 
-			const authentication = new CustomerService(env.DB);
-			const response = await authentication.saveCustomer(customer);
+			const customerService = new CustomerService(env.DB);
+			const response = await customerService.saveCustomer(customer);
 
 			return Response.json(response, { status: HttpStatus.Created });
 		} else if (pathname == '/updateCustomer' && request.method == 'PATCH') {
@@ -111,8 +111,8 @@ export default {
 
 			customer.password = await bcyrpt.hash(customer.password, 10);
 
-			const authentication = new CustomerService(env.DB);
-			const response = await authentication.updateCustomer(customer);
+			const customerService = new CustomerService(env.DB);
+			const response = await customerService.updateCustomer(customer);
 
 			return Response.json(response, { status: HttpStatus.OK });
 		}
