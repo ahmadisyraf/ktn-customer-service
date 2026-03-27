@@ -20,6 +20,7 @@ export type CustomerBase = {
 	lastName: string;
 	email: string;
 	password: string;
+	role: Role;
 	dynamicEntity: Record<string, any> | undefined;
 	createdAt: string | undefined;
 	updatedAt: string | undefined;

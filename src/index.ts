@@ -104,6 +104,8 @@ export default {
 
 
 			try {
+				// This will validate firstName, lastName, email and password
+				// If failed will throw the error
 				customer.validateObject();
 			} catch (error) {
 				return Response.json(error, { status: HttpStatus.BadRequest });
