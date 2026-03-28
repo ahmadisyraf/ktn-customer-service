@@ -102,4 +102,22 @@ export default class CustomerService {
 			throw new Error('Internal server error', { cause: error });
 		}
 	}
+
+	// TODO: set permission for role
+	async setPermission(role: Role, permission: string): boolean {
+		const sql = '';
+
+		try {
+			return (await this.database.prepare(sql).bind().all()).success;
+		} catch (error) {
+			throw new Error('Internal server error', { cause: error});
+		}
+	}
+
+	// TODO: remove permission. Do not allow to update permission
+	async removePermission(role: Role, permission: string) {
+	}
+
+	// TODO: display all permission
+	async allPermission(){}
 }

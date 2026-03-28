@@ -117,8 +117,6 @@ export default {
 
 
 			try {
-				// This will validate firstName, lastName, email and password
-				// If failed will throw the error
 				customer.validateObject();
 			} catch (error) {
 				return Response.json(error, { status: HttpStatus.BadRequest });
@@ -134,6 +132,21 @@ export default {
 			} catch (error) {
 				return Response.json(error, { status: HttpStatus.InternalServerError });
 			}
+		} else if (pathname == '/setPermission' && request.method == 'POST') {
+			type PermissionRequestBody = {
+				permission: string; // example user:create
+			}
+
+			let body: PermissionRequestBody | undefined;
+
+			try {
+				body = await request.json();
+			} catch (error) {
+				return Response.json('Permission required!', { status: HttpStatus.BadRequest });
+			}
+
+			return Response.json(body, { status: HttpStatus.OK });
+
 		}
 
 		return Response.json('Not found', { status: HttpStatus.NotFound });

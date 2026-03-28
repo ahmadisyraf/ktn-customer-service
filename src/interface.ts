@@ -33,5 +33,5 @@ export interface CustomerToJSON {
 	excludePassword(): CustomerBaseWithoutPassword;
 }
 
-export type Role = "ADMIN" | "USER" | "MERCHANT";
+export type Role = 'admin' | 'user' | 'merchant';
 
