@@ -7,7 +7,7 @@ export default class Customer {
 	private _lastName: string = '';
 	private _email: string = '';
 	private _password: string = '';
-	private _role: Role = 'USER';
+	private _role: Role = 'user';
 	private _dynamicEntity: Record<string, any> | undefined;
 	private _createdAt: string | undefined;
 	private _updatedAt: string | undefined;
@@ -61,12 +61,12 @@ export default class Customer {
 		return this;
 	}
 
-	fromJSON(data: any): this {
+	fromJSON(data: any): this { // Usually this one will be use for request body
 		this._firstName = data.firstName || '';
 		this._lastName = data.lastName || '';
 		this._email = data.email || '';
 		this._password = data.password || '';
-		this._role = data.role || '';
+		// this._role = data.role || ''; // Never allow user to update role directly in here
 		this._dynamicEntity = data.dynamicEntity;
 		return this;
 	}
@@ -99,8 +99,8 @@ export default class Customer {
 
 	validateObject() {
 		if (isEmpty(this._firstName)) {
-			throw new Error('First name required!'); 
-		} 
+			throw new Error('First name required!');
+		}
 		if (isEmpty(this._lastName)) {
 			throw new Error('Last name required!');
 		}

@@ -100,6 +100,7 @@ export default {
 			}
 
 			customer.password = await bcyrpt.hash(customer.password, 10);
+			customer.role = 'USER';
 
 			try {
 				const customerService = new CustomerService(env.DB);
@@ -132,21 +133,7 @@ export default {
 			} catch (error) {
 				return Response.json(error, { status: HttpStatus.InternalServerError });
 			}
-		} else if (pathname == '/setPermission' && request.method == 'POST') {
-			type PermissionRequestBody = {
-				permission: string; // example user:create
-			}
-
-			let body: PermissionRequestBody | undefined;
-
-			try {
-				body = await request.json();
-			} catch (error) {
-				return Response.json('Permission required!', { status: HttpStatus.BadRequest });
-			}
-
-			return Response.json(body, { status: HttpStatus.OK });
-
+		} else if (pathname == '/changeCustomerRole' && request.method == 'PATCH') {
 		}
 
 		return Response.json('Not found', { status: HttpStatus.NotFound });

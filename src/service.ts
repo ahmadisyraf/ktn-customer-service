@@ -10,9 +10,9 @@ export default class CustomerService {
 
 	async saveCustomer(customer: Customer) {
 		const sql = `INSERT INTO customers (
-                                            first_name, 
-                                            last_name, 
-                                            email, 
+                                            first_name,
+                                            last_name,
+                                            email,
                                             password_hash
                                             )
                     SELECT ?, ?, ?, ?
@@ -53,10 +53,10 @@ export default class CustomerService {
 	}
 
 	async updateCustomer(customer: Customer) {
-		const sql = `UPDATE customers SET 
-						first_name = ?, 
-            			last_name = ?, 
-            			password_hash = ?, 
+		const sql = `UPDATE customers SET
+						first_name = ?,
+            			last_name = ?,
+            			password_hash = ?,
             			updated_at = CURRENT_TIMESTAMP
 					WHERE email = ?`;
 
@@ -102,22 +102,4 @@ export default class CustomerService {
 			throw new Error('Internal server error', { cause: error });
 		}
 	}
-
-	// TODO: set permission for role
-	async setPermission(role: Role, permission: string): boolean {
-		const sql = '';
-
-		try {
-			return (await this.database.prepare(sql).bind().all()).success;
-		} catch (error) {
-			throw new Error('Internal server error', { cause: error});
-		}
-	}
-
-	// TODO: remove permission. Do not allow to update permission
-	async removePermission(role: Role, permission: string) {
-	}
-
-	// TODO: display all permission
-	async allPermission(){}
 }
