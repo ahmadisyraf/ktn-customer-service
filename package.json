@@ -14,7 +14,7 @@
 		"wrangler": "^4.69.0"
 	},
 	"dependencies": {
-		"ktn-package": "^0.1.6",
+		"ktn-package": "^0.1.7",
 		"reflect-metadata": "^0.2.2"
 	}
 }
