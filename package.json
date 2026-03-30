@@ -9,13 +9,12 @@
 		"cf-typegen": "wrangler types"
 	},
 	"devDependencies": {
-		"@types/bcrypt": "^6.0.0",
 		"@types/node": "^25.3.3",
 		"typescript": "^5.5.2",
 		"wrangler": "^4.69.0"
 	},
 	"dependencies": {
-		"bcryptjs": "^3.0.3",
+		"ktn-package": "^0.1.6",
 		"reflect-metadata": "^0.2.2"
 	}
 }

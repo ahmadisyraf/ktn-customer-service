@@ -1,8 +1,8 @@
-import Customer from './customer';
-import { HttpStatus } from './httpStatus';
-import { GetAllCustomerRequest, PaginationType, SortType } from './interface';
-import CustomerService from './service';
-import bcyrpt from 'bcryptjs';
+import { CustomerService } from 'ktn-package/services';
+import { Customer } from 'ktn-package/models';
+import { HttpStatus } from 'ktn-package/utils';
+import { CustomerRequest, GetAllCustomerRequest, PaginationType, SortType } from 'ktn-package/types';
+
 
 export interface Env {
 	DB: D1Database;
@@ -13,6 +13,7 @@ export default {
 	async fetch(request, env, ctx): Promise<Response> {
 		let { pathname, searchParams } = new URL(request.url);
 		const gatewaySecret = request.headers.get('x-gateway-secret');
+
 
 		if (!gatewaySecret) {
 			return Response.json('Fobidden', { status: HttpStatus.Forbidden });
@@ -43,7 +44,7 @@ export default {
 
 				return Response.json(response, { status: HttpStatus.OK });
 			} catch (error) {
-				return Response.json(error, { status: HttpStatus.InternalServerError});
+				return Response.json(error, { status: HttpStatus.InternalServerError });
 			}
 
 		} else if (pathname === '/getAllCustomer' && request.method == 'POST') {
@@ -88,7 +89,13 @@ export default {
 				return Response.json(error, { status: HttpStatus.InternalServerError });
 			}
 		} else if (pathname == '/createCustomer' && request.method == 'POST') {
-			const body = await request.json();
+			let body: CustomerRequest;
+
+			try {
+				body = await request.json();
+			} catch (error) {
+				return Response.json(error, { status: HttpStatus.BadRequest });
+			}
 
 			let customer = new Customer();
 			customer.fromJSON(body);
@@ -99,8 +106,7 @@ export default {
 				return Response.json(error, { status: HttpStatus.BadRequest });
 			}
 
-			customer.password = await bcyrpt.hash(customer.password, 10);
-			customer.role = 'USER';
+			customer.role = 'user';
 
 			try {
 				const customerService = new CustomerService(env.DB);
@@ -111,19 +117,22 @@ export default {
 				return Response.json(error, { status: HttpStatus.InternalServerError });
 			}
 		} else if (pathname == '/updateCustomer' && request.method == 'PATCH') {
-			const body = await request.json();
+			let body: CustomerRequest;
+
+			try {
+				body = await request.json();
+			} catch (error) {
+				return Response.json(error, { status: HttpStatus.BadRequest })
+			}
 
 			let customer = new Customer();
 			customer.fromJSON(body);
-
 
 			try {
 				customer.validateObject();
 			} catch (error) {
 				return Response.json(error, { status: HttpStatus.BadRequest });
 			}
-
-			customer.password = await bcyrpt.hash(customer.password, 10);
 
 			try {
 				const customerService = new CustomerService(env.DB);
@@ -133,7 +142,6 @@ export default {
 			} catch (error) {
 				return Response.json(error, { status: HttpStatus.InternalServerError });
 			}
-		} else if (pathname == '/changeCustomerRole' && request.method == 'PATCH') {
 		}
 
 		return Response.json('Not found', { status: HttpStatus.NotFound });
