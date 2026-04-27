@@ -1,8 +1,8 @@
-import Customer from './customer';
-import { HttpStatus } from './httpStatus';
-import { GetAllCustomerRequest, PaginationType, SortType } from './interface';
-import CustomerService from './service';
-import bcyrpt from 'bcryptjs';
+import Customer from './model/customer';
+import CustomerService from './service/customer-service';
+import Api from './service/api';
+import { HttpStatus } from './http-status';
+import bcrypt from 'bcryptjs';
 
 export interface Env {
 	DB: D1Database;
@@ -11,131 +11,86 @@ export interface Env {
 
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
-		let { pathname, searchParams } = new URL(request.url);
 		const gatewaySecret = request.headers.get('x-gateway-secret');
 
-		if (!gatewaySecret) {
-			return Response.json('Fobidden', { status: HttpStatus.Forbidden });
+		if ((!gatewaySecret) || (gatewaySecret && gatewaySecret !== env.GATEWAY_SECRET_KEY)) {
+			return Response.json('Forbidden', { status: HttpStatus.Forbidden });
 		}
 
-		if (gatewaySecret) {
-			if (gatewaySecret !== env.GATEWAY_SECRET_KEY) {
-				return Response.json('Fobidden', { status: HttpStatus.Forbidden });
-			}
-			pathname = pathname.replace('/api/customer', '');
-		}
+		let { pathname, searchParams } = new URL(request.url);
+		pathname = pathname.replace('/api/customer', '');
+
+		const api = new Api();
+		api.setDatabase(env.DB);
+
+		const service = new CustomerService(api);
+		const customer = new Customer();
 
 		if (pathname === '/getCustomerByEmail' && request.method == 'GET') {
 			const email = searchParams.get('email');
-			const includePassword = searchParams.get('includePassword');
-
-			if (!email) {
-				return Response.json('Email required!', { status: HttpStatus.BadRequest });
-			}
-
-			if (!email.includes('@')) {
-				return Response.json('Invalid email!', { status: HttpStatus.BadRequest });
-			}
 
 			try {
-				const customerService = new CustomerService(env.DB);
-				const response = await customerService.findCustomerByEmail(email, includePassword);
+				const response = await service
+					.loadCustomer()
+					.setEmail(email)
+					.doRequest();
 
-				return Response.json(response, { status: HttpStatus.OK });
+				if (response) {
+					customer.firstName = response.firstName;
+					customer.lastName = response.lastName;
+					customer.email = response.email;
+					customer.role = response.role;
+					customer.updatedAt = response.updatedAt;
+					customer.createdAt = response.createdAt;
+					customer.dynamicEntity = response.dynamicEntity;
+				}
+
+				return Response.json(response ? customer.getBody() : {}, { status: HttpStatus.OK });
 			} catch (error) {
-				return Response.json(error, { status: HttpStatus.InternalServerError});
-			}
-
-		} else if (pathname === '/getAllCustomer' && request.method == 'POST') {
-			type GetAllCustomerRequest_ = Omit<GetAllCustomerRequest, 'pagination'> & {
-				pagination: PaginationType | undefined;
-			};
-
-			let body: GetAllCustomerRequest_ | undefined;
-
-			try {
-				body = await request.json();
-			} catch {
-				body = undefined;
-			}
-
-			let pagination: PaginationType = {
-				page: 1,
-				limit: 10,
-			};
-
-			let sort: SortType = {
-				column: 'created_at',
-				direction: 'asc',
-			};
-
-			if (body && body.pagination) {
-				if (body.pagination.page > 0) pagination.page = body.pagination.page;
-				if (body.pagination.limit > 0) pagination.limit = body.pagination.limit;
-			}
-
-			if (body && body.sort) {
-				if (body.sort.column) sort.column = body.sort.column;
-				if (body.sort.direction) sort.direction = body.sort.direction;
-			}
-
-			try {
-				const customerService = new CustomerService(env.DB);
-				const response = await customerService.findAllCustomer({ pagination, sort });
-
-				return Response.json(response, { status: HttpStatus.OK });
-			} catch (error) {
+				console.error(error);
 				return Response.json(error, { status: HttpStatus.InternalServerError });
 			}
 		} else if (pathname == '/createCustomer' && request.method == 'POST') {
-			const body = await request.json();
+			const body = await request.json<any>();
 
-			let customer = new Customer();
-			customer.fromJSON(body);
-
-			try {
-				customer.validateObject();
-			} catch (error) {
-				return Response.json(error, { status: HttpStatus.BadRequest });
-			}
-
-			customer.password = await bcyrpt.hash(customer.password, 10);
-			customer.role = 'USER';
+			customer.firstName = body.firstName;
+			customer.lastName = body.lastName;
+			customer.password = bcrypt.hashSync(body.password, 10);
+			customer.email = body.email;
+			customer.role = body.role;
+			customer.dynamicEntity = body.dynamicEntity;
 
 			try {
-				const customerService = new CustomerService(env.DB);
-				const response = await customerService.saveCustomer(customer);
-
-				return Response.json(response, { status: HttpStatus.Created });
-			} catch (error) {
-				return Response.json(error, { status: HttpStatus.InternalServerError });
-			}
-		} else if (pathname == '/updateCustomer' && request.method == 'PATCH') {
-			const body = await request.json();
-
-			let customer = new Customer();
-			customer.fromJSON(body);
-
-
-			try {
-				customer.validateObject();
-			} catch (error) {
-				return Response.json(error, { status: HttpStatus.BadRequest });
-			}
-
-			customer.password = await bcyrpt.hash(customer.password, 10);
-
-			try {
-				const customerService = new CustomerService(env.DB);
-				const response = await customerService.updateCustomer(customer);
+				const response = await service
+					.createCustomer()
+					.setCustomer(customer)
+					.doRequest();
 
 				return Response.json(response, { status: HttpStatus.OK });
 			} catch (error) {
+				console.log(error);
 				return Response.json(error, { status: HttpStatus.InternalServerError });
 			}
-		} else if (pathname == '/changeCustomerRole' && request.method == 'PATCH') {
+		} else if (pathname === '/updateCustomer' && request.method == 'PATCH') {
+			const body = await request.json<any>();
+
+			customer.firstName = body.firstName;
+			customer.lastName = body.lastName;
+			customer.email = body.email;
+
+			try {
+				const response = await service
+					.updateCustomer()
+					.setCustomer(customer)
+					.doRequest();
+
+				return Response.json(response, { status: HttpStatus.OK });
+			} catch (error) {
+				console.log(error);
+				return Response.json(error, { status: HttpStatus.InternalServerError });
+			}
 		}
 
 		return Response.json('Not found', { status: HttpStatus.NotFound });
-	},
+	}
 } satisfies ExportedHandler<Env>;
