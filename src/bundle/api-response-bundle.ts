@@ -1,4 +1,4 @@
-export default class APIGetBodyResponseBundle {
+export default class ApiResponseBundle {
 	private _database: D1Database | undefined;
 	private _cache: KVNamespace | undefined;
 

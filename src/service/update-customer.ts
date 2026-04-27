@@ -15,7 +15,7 @@ export default class UpdateCustomer {
 		return this;
 	}
 
-	public async doRequest(): Promise<Boolean> {
+	public async doRequest(): Promise<Customer> {
 		if (!this.customer) {
 			throw new Error('Customer not found!');
 		}
@@ -25,10 +25,11 @@ export default class UpdateCustomer {
 			SET firstName = ?,
 					lastName  = ?,
 					updatedAt = CURRENT_TIMESTAMP
-			WHERE email = ?`;
+			WHERE email = ? RETURNING firstName, lastName, email, role, metadata, updatedAt, createdAt
+		`;
 
 		try {
-			const result = await this.api
+			const { results } = await this.api
 				.getBody()
 				.database
 				.prepare(sql)
@@ -37,9 +38,9 @@ export default class UpdateCustomer {
 					this.customer.lastName,
 					this.customer.email
 				)
-				.run();
+				.run<Customer>();
 
-			return result.success && result.meta.changes > 0;
+			return Object.assign(new Customer(), results[0]);
 		} catch (error) {
 			throw new Error('Failed to update the customer', { cause: error });
 		}

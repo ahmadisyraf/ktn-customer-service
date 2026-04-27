@@ -35,17 +35,7 @@ export default {
 					.setEmail(email)
 					.doRequest();
 
-				if (response) {
-					customer.firstName = response.firstName;
-					customer.lastName = response.lastName;
-					customer.email = response.email;
-					customer.role = response.role;
-					customer.updatedAt = response.updatedAt;
-					customer.createdAt = response.createdAt;
-					customer.dynamicEntity = response.dynamicEntity;
-				}
-
-				return Response.json(response ? customer.getBody() : {}, { status: HttpStatus.OK });
+				return Response.json(response ? response.getBody() : {}, { status: HttpStatus.OK });
 			} catch (error) {
 				console.error(error);
 				return Response.json(error, { status: HttpStatus.InternalServerError });
@@ -58,7 +48,7 @@ export default {
 			customer.password = bcrypt.hashSync(body.password, 10);
 			customer.email = body.email;
 			customer.role = body.role;
-			customer.dynamicEntity = body.dynamicEntity;
+			customer.metadata = body.metadata;
 
 			try {
 				const response = await service
@@ -66,7 +56,7 @@ export default {
 					.setCustomer(customer)
 					.doRequest();
 
-				return Response.json(response, { status: HttpStatus.OK });
+				return Response.json(response.getBody(), { status: HttpStatus.OK });
 			} catch (error) {
 				console.log(error);
 				return Response.json(error, { status: HttpStatus.InternalServerError });
@@ -84,7 +74,7 @@ export default {
 					.setCustomer(customer)
 					.doRequest();
 
-				return Response.json(response, { status: HttpStatus.OK });
+				return Response.json(response.getBody(), { status: HttpStatus.OK });
 			} catch (error) {
 				console.log(error);
 				return Response.json(error, { status: HttpStatus.InternalServerError });

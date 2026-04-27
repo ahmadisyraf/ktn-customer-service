@@ -15,7 +15,7 @@ export default class CreateCustomer {
 		return this;
 	}
 
-	public async doRequest(): Promise<Boolean> {
+	public async doRequest(): Promise<Customer> {
 		if (!this.customer) {
 			throw new Error('Missing customer information');
 		}
@@ -26,18 +26,19 @@ export default class CreateCustomer {
 											lastName,
 											email,
 											password,
-			                role,
-			                dynamicEntity)
+											role,
+											metadata)
 			SELECT ?,
 						 ?,
 						 ?,
 						 ?,
 						 ?,
 						 ? WHERE NOT EXISTS (SELECT 1 FROM customers WHERE email = ? LIMIT 1)
+			RETURNING firstName, lastName, email, role, metadata, updatedAt, createdAt
 		`;
 
 		try {
-			const result = await this.api
+			const { results } = await this.api
 				.getBody()
 				.database
 				.prepare(sql)
@@ -47,12 +48,12 @@ export default class CreateCustomer {
 					this.customer.email,
 					this.customer.password,
 					this.customer.role,
-					JSON.stringify(this.customer.dynamicEntity),
+					JSON.stringify(this.customer.metadata),
 					this.customer.email
 				)
-				.run();
+				.run<Customer>();
 
-			return result.success && result.meta.rows_written > 0;
+			return Object.assign(new Customer(), results[0]);
 		} catch (error) {
 			throw new Error('Failed to create the customer', { cause: error });
 		}

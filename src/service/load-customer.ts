@@ -24,14 +24,18 @@ export default class LoadCustomer {
 			throw new Error('Invalid email');
 		}
 
-		const sql = 'SELECT * FROM customers WHERE email = ? LIMIT 1';
+		const sql = `SELECT firstName, lastName, email, role, metadata, updatedAt, createdAt
+								 FROM customers
+								 WHERE email = ? LIMIT 1`;
 		try {
-			return await this.api
+			const result = await this.api
 				.getBody()
 				.database
 				.prepare(sql)
 				.bind(this.email)
 				.first<Customer | null>();
+
+			return result ? Object.assign(new Customer(), result) : null;
 		} catch (error) {
 			throw new Error('Failed to load the customer', { cause: error });
 		}

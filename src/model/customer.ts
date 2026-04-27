@@ -1,6 +1,6 @@
 import BaseModel from './base-model';
 
-export default class Customer extends BaseModel{
+export default class Customer extends BaseModel {
 	public firstName: string = '';
 	public lastName: string = '';
 	public email: string = '';
@@ -12,14 +12,13 @@ export default class Customer extends BaseModel{
 	}
 
 	public getBody(): Record<string, any> {
-
 		return {
 			firstName: this.firstName,
 			lastName: this.lastName,
 			email: this.email,
 			password: this.password,
 			role: this.role,
-			...typeof this.dynamicEntity === 'string' ? JSON.parse(this.dynamicEntity) : this.dynamicEntity,
+			...typeof this.metadata === 'string' ? JSON.parse(this.metadata) : this.metadata,
 			updatedAt: this.updatedAt,
 			createdAt: this.createdAt
 		};
