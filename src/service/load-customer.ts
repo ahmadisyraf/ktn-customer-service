@@ -9,7 +9,7 @@ export default class LoadCustomer {
 		this.api = api;
 	}
 
-	public setEmail(email: string | null | undefined): this {
+	public setEmail(email: string | null): this {
 		this.email = email;
 
 		return this;
