@@ -1,16 +1,50 @@
 import Customer from '../model/customer';
 import Api from './api';
+import bcrypt from 'bcryptjs';
+import Address from '../model/address';
+import Metadata from '../model/metadata';
 
 export default class CreateCustomer {
-	private customer: Customer | undefined;
+	private customer = new Customer();
+	private metadata = new Metadata();
+	private address = new Address();
 	private api: Api;
 
 	constructor(api: Api) {
 		this.api = api;
 	}
 
-	public setCustomer(customer: Customer | undefined): this {
-		this.customer = customer;
+	public setCustomer(customer: Record<string, any>): this {
+		if (!customer) {
+			throw new Error('Customer required');
+		}
+
+		this.customer.firstName = customer.firstName;
+		this.customer.lastName = customer.lastName;
+		this.customer.email = customer.email;
+		this.customer.role = customer.role;
+
+		if (!customer.password) {
+			throw new Error('Password is required');
+		}
+
+		this.customer.password = bcrypt.hashSync(customer.password, 10);
+
+		if (customer.metadata) {
+			if (customer.metadata.address) {
+				const { street, city, state, country, postcode } = customer.metadata.address;
+
+				this.address.street = street;
+				this.address.city = city;
+				this.address.state = state;
+				this.address.postcode = postcode;
+				this.address.country = country;
+
+				this.metadata.address = this.address;
+			}
+
+			this.customer.metadata = this.metadata;
+		}
 
 		return this;
 	}
@@ -48,7 +82,7 @@ export default class CreateCustomer {
 					this.customer.email,
 					this.customer.password,
 					this.customer.role,
-					JSON.stringify(this.customer.metadata),
+					this.customer.metadata ? JSON.stringify(this.customer.metadata) : '{}',
 					this.customer.email
 				)
 				.run<Customer>();

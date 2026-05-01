@@ -3,14 +3,16 @@ import Customer from '../model/customer';
 
 export default class UpdateCustomer {
 	private api: Api;
-	private customer: Customer | undefined | null;
+	private customer = new Customer();
 
 	constructor(api: Api) {
 		this.api = api;
 	}
 
 	public setCustomer(customer: Customer): this {
-		this.customer = customer;
+		this.customer.firstName = customer.firstName;
+		this.customer.lastName = customer.lastName;
+		this.customer.email = customer.email;
 
 		return this;
 	}

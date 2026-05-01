@@ -1,6 +1,7 @@
-export default abstract class BaseModel {
+import Metadata from './metadata';
+
+export default class BaseModel {
 	public updatedAt: string | undefined;
 	public createdAt: string | undefined;
-	public metadata: Record<string, any> = {};
-
+	public metadata: Metadata | undefined;
 }
