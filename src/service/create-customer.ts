@@ -21,6 +21,11 @@ export default class CreateCustomer {
 
 		this.customer.firstName = customer.firstName;
 		this.customer.lastName = customer.lastName;
+
+		if (customer.email.includes("@") == false) {
+			throw new Error("Invalid email address");
+		}
+
 		this.customer.email = customer.email;
 		this.customer.role = customer.role;
 

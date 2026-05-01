@@ -34,8 +34,13 @@ export default {
 
 				return Response.json(response ? response.getBody() : {}, { status: HttpStatus.OK });
 			} catch (error) {
-				console.error(error);
-				return Response.json(error, { status: HttpStatus.InternalServerError });
+				if (error instanceof Error) {
+					return Response.json({
+						'message': error.message,
+						'status': HttpStatus.InternalServerError,
+						'stack': error.stack
+					}, { status: HttpStatus.InternalServerError });
+				}
 			}
 		} else if (pathname == '/createCustomer' && request.method == 'POST') {
 			const body = await request.json<any>();
@@ -48,8 +53,13 @@ export default {
 
 				return Response.json(response.getBody(), { status: HttpStatus.OK });
 			} catch (error) {
-				console.log(error);
-				return Response.json(error, { status: HttpStatus.InternalServerError });
+				if (error instanceof Error) {
+					return Response.json({
+						'message': error.message,
+						'status': HttpStatus.InternalServerError,
+						'stack': error.stack
+					}, { status: HttpStatus.InternalServerError });
+				}
 			}
 		} else if (pathname === '/updateCustomer' && request.method == 'PATCH') {
 			const body = await request.json<any>();
@@ -62,8 +72,13 @@ export default {
 
 				return Response.json(response.getBody(), { status: HttpStatus.OK });
 			} catch (error) {
-				console.log(error);
-				return Response.json(error, { status: HttpStatus.InternalServerError });
+				if (error instanceof Error) {
+					return Response.json({
+						'message': error.message,
+						'status': HttpStatus.InternalServerError,
+						'stack': error.stack
+					}, { status: HttpStatus.InternalServerError });
+				}
 			}
 		}
 
