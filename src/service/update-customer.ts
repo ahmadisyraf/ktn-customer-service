@@ -1,5 +1,6 @@
 import Api from './api';
 import Customer from '../model/customer';
+import { HttpStatus } from '../http-status';
 
 export default class UpdateCustomer {
 	private api: Api;
@@ -17,7 +18,7 @@ export default class UpdateCustomer {
 		return this;
 	}
 
-	public async doRequest(): Promise<Customer> {
+	public async doRequest(): Promise<Response> {
 		if (!this.customer) {
 			throw new Error('Customer not found!');
 		}
@@ -42,7 +43,9 @@ export default class UpdateCustomer {
 				)
 				.run<Customer>();
 
-			return Object.assign(new Customer(), results[0]);
+			const response =  Object.assign(new Customer(), results[0]);
+
+			return Response.json(response.getBody(), { status: HttpStatus.OK });
 		} catch (error) {
 			throw new Error('Failed to update the customer', { cause: error });
 		}

@@ -3,6 +3,7 @@ import Api from './api';
 import bcrypt from 'bcryptjs';
 import Address from '../model/address';
 import Metadata from '../model/metadata';
+import { HttpStatus } from '../http-status';
 
 export default class CreateCustomer {
 	private customer = new Customer();
@@ -54,7 +55,7 @@ export default class CreateCustomer {
 		return this;
 	}
 
-	public async doRequest(): Promise<Customer> {
+	public async doRequest(): Promise<Response> {
 		if (!this.customer) {
 			throw new Error('Missing customer information');
 		}
@@ -92,7 +93,9 @@ export default class CreateCustomer {
 				)
 				.run<Customer>();
 
-			return Object.assign(new Customer(), results[0]);
+			const response = Object.assign(new Customer(), results[0]);
+
+			return Response.json(response.getBody(), { status: HttpStatus.OK });
 		} catch (error) {
 			throw new Error('Failed to create the customer', { cause: error });
 		}

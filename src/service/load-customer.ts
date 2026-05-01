@@ -1,5 +1,6 @@
 import Api from './api';
 import Customer from '../model/customer';
+import { HttpStatus } from '../http-status';
 
 export default class LoadCustomer {
 	private api: Api;
@@ -15,7 +16,7 @@ export default class LoadCustomer {
 		return this;
 	}
 
-	public async doRequest(): Promise<Customer | null> {
+	public async doRequest(): Promise<Response> {
 		if (!this.email) {
 			throw new Error('Missing email');
 		}
@@ -35,9 +36,11 @@ export default class LoadCustomer {
 				.bind(this.email)
 				.first<Customer | null>();
 
-			return result ? Object.assign(new Customer(), result) : null;
+			const response = result ? Object.assign(new Customer(), result) : null;
+
+			return Response.json(response ? response.getBody() : {}, { status: HttpStatus.OK });
 		} catch (error) {
-			throw new Error('Failed to load the customer', { cause: error });
+			throw new Error('Failed to load customer', { cause: error });
 		}
 	}
 }

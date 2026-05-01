@@ -23,63 +23,39 @@ export default {
 
 		const service = new CustomerService(api);
 
-		if (pathname === '/getCustomerByEmail' && request.method == 'GET') {
-			const email = searchParams.get('email');
+		try {
+			if (pathname === '/getCustomerByEmail' && request.method == 'GET') {
+				const email = searchParams.get('email');
 
-			try {
-				const response = await service
+				return service
 					.loadCustomer()
 					.setEmail(email)
 					.doRequest();
+			} else if (pathname == '/createCustomer' && request.method == 'POST') {
+				const body = await request.json<any>();
 
-				return Response.json(response ? response.getBody() : {}, { status: HttpStatus.OK });
-			} catch (error) {
-				if (error instanceof Error) {
-					return Response.json({
-						'message': error.message,
-						'status': HttpStatus.InternalServerError,
-						'stack': error.stack
-					}, { status: HttpStatus.InternalServerError });
-				}
-			}
-		} else if (pathname == '/createCustomer' && request.method == 'POST') {
-			const body = await request.json<any>();
-
-			try {
-				const response = await service
+				return service
 					.createCustomer()
 					.setCustomer(body)
 					.doRequest();
+			} else if (pathname === '/updateCustomer' && request.method == 'PATCH') {
+				const body = await request.json<any>();
 
-				return Response.json(response.getBody(), { status: HttpStatus.OK });
-			} catch (error) {
-				if (error instanceof Error) {
-					return Response.json({
-						'message': error.message,
-						'status': HttpStatus.InternalServerError,
-						'stack': error.stack
-					}, { status: HttpStatus.InternalServerError });
-				}
-			}
-		} else if (pathname === '/updateCustomer' && request.method == 'PATCH') {
-			const body = await request.json<any>();
-
-			try {
-				const response = await service
+				return service
 					.updateCustomer()
 					.setCustomer(body)
 					.doRequest();
-
-				return Response.json(response.getBody(), { status: HttpStatus.OK });
-			} catch (error) {
-				if (error instanceof Error) {
-					return Response.json({
-						'message': error.message,
-						'status': HttpStatus.InternalServerError,
-						'stack': error.stack
-					}, { status: HttpStatus.InternalServerError });
-				}
 			}
+		} catch (error) {
+			if (error instanceof Error) {
+				return Response.json({
+					'message': error.message,
+					'status': HttpStatus.InternalServerError,
+					'stack': error.stack
+				}, { status: HttpStatus.InternalServerError });
+			}
+
+			return Response.json('Internal Server Error', { status: HttpStatus.InternalServerError });
 		}
 
 		return Response.json('Not found', { status: HttpStatus.NotFound });
