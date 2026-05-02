@@ -11,7 +11,7 @@ export default class Customer extends BaseModel {
 		super();
 	}
 
-	public getBody(): Record<string, any> {
+	public get object(): Record<string, any> {
 		return {
 			firstName: this.firstName,
 			lastName: this.lastName,
@@ -23,5 +23,4 @@ export default class Customer extends BaseModel {
 			createdAt: this.createdAt
 		};
 	}
-
 }

@@ -45,7 +45,7 @@ export default class UpdateCustomer {
 
 			const response =  Object.assign(new Customer(), results[0]);
 
-			return Response.json(response.getBody(), { status: HttpStatus.OK });
+			return Response.json(response.object, { status: HttpStatus.OK });
 		} catch (error) {
 			throw new Error('Failed to update the customer', { cause: error });
 		}

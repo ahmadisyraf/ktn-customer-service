@@ -38,7 +38,7 @@ export default class LoadCustomer {
 
 			const response = result ? Object.assign(new Customer(), result) : null;
 
-			return Response.json(response ? response.getBody() : {}, { status: HttpStatus.OK });
+			return Response.json(response ? response.object : {}, { status: HttpStatus.OK });
 		} catch (error) {
 			throw new Error('Failed to load customer', { cause: error });
 		}
