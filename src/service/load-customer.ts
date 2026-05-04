@@ -1,6 +1,7 @@
 import Api from './api';
 import Customer from '../model/customer';
 import { HttpStatus } from '../http-status';
+import ApiException from '../common/api-exception';
 
 export default class LoadCustomer {
 	private api: Api;
@@ -11,6 +12,9 @@ export default class LoadCustomer {
 	}
 
 	public setEmail(email: string | null): this {
+		if (!email) {
+			throw new ApiException('Email not found', { status: HttpStatus.BadRequest });
+		}
 		this.email = email;
 
 		return this;
@@ -18,16 +22,17 @@ export default class LoadCustomer {
 
 	public async doRequest(): Promise<Response> {
 		if (!this.email) {
-			throw new Error('Missing email');
+			throw new ApiException('Email not found', { status: HttpStatus.BadRequest });
 		}
 
 		if (!this.email.includes('@')) {
-			throw new Error('Invalid email');
+			throw new ApiException('Invalid email address format', { status: HttpStatus.BadRequest });
 		}
 
 		const sql = `SELECT firstName, lastName, email, role, metadata, updatedAt, createdAt
 								 FROM customers
 								 WHERE email = ? LIMIT 1`;
+
 		try {
 			const result = await this.api
 				.getBody()
@@ -40,7 +45,7 @@ export default class LoadCustomer {
 
 			return Response.json(response ? response.object : {}, { status: HttpStatus.OK });
 		} catch (error) {
-			throw new Error('Failed to load customer', { cause: error });
+			throw new ApiException('Internal server error', { cause: error });
 		}
 	}
 }
