@@ -1,4 +1,5 @@
 import BaseModel from './base-model';
+import FieldNotExistException from '../common/field-not-exist-exception';
 
 export default class Customer extends BaseModel {
 	public firstName: string = '';
@@ -9,6 +10,10 @@ export default class Customer extends BaseModel {
 
 	constructor() {
 		super();
+	}
+
+	public static keys(): readonly string[] {
+		return ['firstName', 'lastName', 'email', 'password', 'role'] as const;
 	}
 
 	public get object(): Record<string, any> {

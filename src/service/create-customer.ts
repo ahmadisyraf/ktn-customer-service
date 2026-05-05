@@ -4,8 +4,11 @@ import bcrypt from 'bcryptjs';
 import Address from '../model/address';
 import Metadata from '../model/metadata';
 import { HttpStatus } from '../http-status';
-import Utils from '../common/utils';
+import JsonUtils from '../common/./json-utils';
 import ApiException from '../common/api-exception';
+import FieldException from '../common/field-exception';
+import StringUtils from '../common/string-utils';
+import FieldNotExistException from '../common/field-not-exist-exception';
 
 export default class CreateCustomer {
 	private customer = new Customer();
@@ -22,22 +25,41 @@ export default class CreateCustomer {
 			throw new ApiException('Customer not found!', { status: HttpStatus.BadRequest });
 		}
 
+		Object.keys(customer).forEach(key => {
+			if (Customer.keys().includes(key) == false) {
+				throw new FieldNotExistException(key);
+			}
+		});
+
+		if (customer.hasOwnProperty('firstName') === false) {
+			throw new FieldException('firstName');
+		}
 		this.customer.firstName = customer.firstName;
+
+		if (customer.hasOwnProperty('lastName') === false) {
+			throw new FieldException('lastName');
+		}
 		this.customer.lastName = customer.lastName;
 
-		if (customer.email.includes('@') == false) {
-			throw new Error('Invalid email address');
+		if (customer.hasOwnProperty('email') === false) {
+			throw new FieldException('email');
 		}
-
+		if (customer.email.includes('@') == false) {
+			throw new ApiException('Invalid email address', { status: HttpStatus.BadRequest });
+		}
 		this.customer.email = customer.email;
+
+		if (customer.hasOwnProperty('password') === false) {
+			throw new FieldException('role');
+		}
 		this.customer.role = customer.role;
 
-		if (!customer.password) {
-			throw new ApiException('Password required', { status: HttpStatus.BadRequest });
+		if (customer.hasOwnProperty('password') === false) {
+			throw new FieldException('password');
 		}
-
 		this.customer.password = bcrypt.hashSync(customer.password, 10);
 
+		// For now all of them not mandatory.
 		if (customer.metadata) {
 			if (customer.metadata.address) {
 				const { street, city, state, country, postcode } = customer.metadata.address;
@@ -90,7 +112,7 @@ export default class CreateCustomer {
 					this.customer.email,
 					this.customer.password,
 					this.customer.role,
-					this.customer.metadata ? JSON.stringify(this.customer.metadata) : '{}',
+					this.customer.metadata ? JsonUtils.toJSON(this.customer.metadata) : '{}',
 					this.customer.email
 				)
 				.run();
@@ -100,11 +122,14 @@ export default class CreateCustomer {
 			}
 
 			const data = results[0];
-			const response = Utils.mapToObject(data, Customer);
+			const response = JsonUtils.mapToObject(data, Customer);
 
 			return Response.json(response.object, { status: HttpStatus.OK });
 		} catch (error) {
-			if (error instanceof ApiException) throw error;
+			if (error instanceof ApiException) {
+				throw error;
+			}
+			;
 			throw new ApiException('Internal server error', { cause: error });
 		}
 	}

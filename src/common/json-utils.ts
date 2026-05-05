@@ -1,7 +1,7 @@
-export default class Utils {
+export default class JsonUtils {
 
-	public static toJSON(object: Record<string, any>): Record<string, any> {
-		return JSON.parse(JSON.stringify(object));
+	public static toJSON(object: Record<string, any>): string {
+		return JSON.stringify(object)
 	}
 
 

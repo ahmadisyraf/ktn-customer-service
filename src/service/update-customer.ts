@@ -2,6 +2,8 @@ import Api from './api';
 import Customer from '../model/customer';
 import { HttpStatus } from '../http-status';
 import ApiException from '../common/api-exception';
+import JsonUtils from '../common/./json-utils';
+import FieldException from '../common/field-exception';
 
 export default class UpdateCustomer {
 	private api: Api;
@@ -13,10 +15,22 @@ export default class UpdateCustomer {
 
 	public setCustomer(customer: Customer): this {
 		if (!customer) {
-			throw new ApiException('Customer not found');
+			throw new ApiException('Customer not found', { status: HttpStatus.BadRequest });
+		}
+
+		if (!customer.firstName) {
+			throw new FieldException('firstName');
 		}
 		this.customer.firstName = customer.firstName;
+
+		if (!customer.lastName) {
+			throw new FieldException('lastName');
+		}
 		this.customer.lastName = customer.lastName;
+
+		if (!customer.email) {
+			throw new FieldException('email');
+		}
 		this.customer.email = customer.email;
 
 		return this;
@@ -47,10 +61,14 @@ export default class UpdateCustomer {
 				)
 				.run();
 
-			const response = Object.assign(new Customer(), results[0]);
+			const data = results[0];
+			const response = JsonUtils.mapToObject(data, Customer);
 
 			return Response.json(response.object, { status: HttpStatus.OK });
 		} catch (error) {
+			if (error instanceof ApiException) {
+				throw error;
+			}
 			throw new ApiException('Internal server error', { cause: error });
 		}
 	}
