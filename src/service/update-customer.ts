@@ -3,7 +3,7 @@ import Customer from '../model/customer';
 import { HttpStatus } from '../http-status';
 import ApiException from '../common/api-exception';
 import JsonUtils from '../common/./json-utils';
-import FieldException from '../common/field-exception';
+import Metadata from '../model/metadata';
 
 export default class UpdateCustomer {
 	private api: Api;
@@ -13,25 +13,14 @@ export default class UpdateCustomer {
 		this.api = api;
 	}
 
-	public setCustomer(customer: Customer): this {
+	public setCustomer(customer: Record<string, any>): this {
 		if (!customer) {
 			throw new ApiException('Customer not found', { status: HttpStatus.BadRequest });
 		}
 
-		if (!customer.firstName) {
-			throw new FieldException('firstName');
-		}
-		this.customer.firstName = customer.firstName;
+		this.customer = Customer.from(customer, {});
 
-		if (!customer.lastName) {
-			throw new FieldException('lastName');
-		}
-		this.customer.lastName = customer.lastName;
-
-		if (!customer.email) {
-			throw new FieldException('email');
-		}
-		this.customer.email = customer.email;
+		console.log(this.customer);
 
 		return this;
 	}
@@ -46,7 +35,7 @@ export default class UpdateCustomer {
 			SET firstName = ?,
 					lastName  = ?,
 					updatedAt = CURRENT_TIMESTAMP
-			WHERE email = ? RETURNING firstName, lastName, email, role, metadata, updatedAt, createdAt
+			WHERE email = ? RETURNING firstName, lastName, email, role, password, metadata, updatedAt, createdAt
 		`;
 
 		try {
@@ -59,12 +48,12 @@ export default class UpdateCustomer {
 					this.customer.lastName,
 					this.customer.email
 				)
-				.run();
+				.run<any>();
 
 			const data = results[0];
-			const response = JsonUtils.mapToObject(data, Customer);
+			const response = Customer.from(data, {});
 
-			return Response.json(response.object, { status: HttpStatus.OK });
+			return Response.json(response, { status: HttpStatus.OK });
 		} catch (error) {
 			if (error instanceof ApiException) {
 				throw error;

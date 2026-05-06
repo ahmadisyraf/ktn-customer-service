@@ -2,6 +2,7 @@ import Api from './api';
 import CreateCustomer from './create-customer';
 import LoadCustomer from './load-customer';
 import UpdateCustomer from './update-customer';
+import Customer from '../model/customer';
 
 
 export default class CustomerService {

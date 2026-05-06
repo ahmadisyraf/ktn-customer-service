@@ -7,7 +7,6 @@ import { HttpStatus } from '../http-status';
 import JsonUtils from '../common/./json-utils';
 import ApiException from '../common/api-exception';
 import FieldException from '../common/field-exception';
-import StringUtils from '../common/string-utils';
 import FieldNotExistException from '../common/field-not-exist-exception';
 
 export default class CreateCustomer {
@@ -25,56 +24,14 @@ export default class CreateCustomer {
 			throw new ApiException('Customer not found!', { status: HttpStatus.BadRequest });
 		}
 
-		Object.keys(customer).forEach(key => {
-			if (Customer.keys().includes(key) == false) {
-				throw new FieldNotExistException(key);
-			}
-		});
-
-		if (customer.hasOwnProperty('firstName') === false) {
-			throw new FieldException('firstName');
-		}
-		this.customer.firstName = customer.firstName;
-
-		if (customer.hasOwnProperty('lastName') === false) {
-			throw new FieldException('lastName');
-		}
-		this.customer.lastName = customer.lastName;
-
-		if (customer.hasOwnProperty('email') === false) {
-			throw new FieldException('email');
-		}
-		if (customer.email.includes('@') == false) {
-			throw new ApiException('Invalid email address', { status: HttpStatus.BadRequest });
-		}
-		this.customer.email = customer.email;
-
-		if (customer.hasOwnProperty('password') === false) {
-			throw new FieldException('role');
-		}
-		this.customer.role = customer.role;
-
-		if (customer.hasOwnProperty('password') === false) {
-			throw new FieldException('password');
-		}
-		this.customer.password = bcrypt.hashSync(customer.password, 10);
-
-		// For now all of them not mandatory.
-		if (customer.metadata) {
-			if (customer.metadata.address) {
-				const { street, city, state, country, postcode } = customer.metadata.address;
-
-				this.address.street = street;
-				this.address.city = city;
-				this.address.state = state;
-				this.address.postcode = postcode;
-				this.address.country = country;
-
-				this.metadata.address = this.address;
-			}
-
-			this.customer.metadata = this.metadata;
-		}
+		this.customer = Customer.newCustomerBuilder()
+			.setFirstName(customer.firstName)
+			.setLastName(customer.lastName)
+			.setEmail(customer.email)
+			.setPassword(customer.password)
+			.setRole(customer.role)
+			.setMetadata(Metadata.from(customer.metadata))
+			.build();
 
 		return this;
 	}
@@ -98,7 +55,7 @@ export default class CreateCustomer {
 						 ?,
 						 ?,
 						 ? WHERE NOT EXISTS (SELECT 1 FROM customers WHERE email = ? LIMIT 1)
-			RETURNING firstName, lastName, email, role, metadata, updatedAt, createdAt
+			RETURNING firstName, lastName, email, role, password, metadata, updatedAt, createdAt
 		`;
 
 		try {
@@ -115,21 +72,20 @@ export default class CreateCustomer {
 					this.customer.metadata ? JsonUtils.toJSON(this.customer.metadata) : '{}',
 					this.customer.email
 				)
-				.run();
+				.run<any>();
 
 			if (meta.rows_written === 0) {
 				throw new ApiException('Customer already exist', { status: HttpStatus.BadRequest });
 			}
 
 			const data = results[0];
-			const response = JsonUtils.mapToObject(data, Customer);
+			const response = Customer.from(data, {});
 
-			return Response.json(response.object, { status: HttpStatus.OK });
+			return Response.json(response, { status: HttpStatus.OK });
 		} catch (error) {
 			if (error instanceof ApiException) {
 				throw error;
 			}
-			;
 			throw new ApiException('Internal server error', { cause: error });
 		}
 	}

@@ -31,7 +31,13 @@ export default class LoadCustomer {
 			throw new FieldException('email (invalid email)');
 		}
 
-		const sql = `SELECT firstName, lastName, email, role, metadata, updatedAt, createdAt
+		const sql = `SELECT firstName,
+												lastName,
+												email,
+												role,
+												metadata,
+												updatedAt,
+												createdAt
 								 FROM customers
 								 WHERE email = ? LIMIT 1`;
 
@@ -45,10 +51,10 @@ export default class LoadCustomer {
 
 			let response;
 			if (result) {
-				response = JsonUtils.mapToObject(result, Customer);
+				response = Customer.from(result, {});
 			}
 
-			return Response.json(response ? response.object : {}, { status: HttpStatus.OK });
+			return Response.json(response ? response : {}, { status: HttpStatus.OK });
 		} catch (error) {
 			if (error instanceof ApiException) {
 				throw error;
