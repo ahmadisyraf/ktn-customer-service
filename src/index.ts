@@ -48,7 +48,6 @@ export default {
 					.doRequest();
 			}
 		} catch (error) {
-			console.log(error);
 			if (error instanceof ApiException) {
 				return Response.json({
 					name: error.name,
