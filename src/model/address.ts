@@ -24,8 +24,8 @@ export default class Address {
 		this.state = state.state || undefined;
 	}
 
-	public static keys() {
-		return ['street', 'city', 'state', 'postcode', 'country'] as const;
+	public static keys(): readonly string[] {
+		return Object.keys(new this()) as readonly string[];
 	}
 
 	public static from(address: Record<string, any>) {
