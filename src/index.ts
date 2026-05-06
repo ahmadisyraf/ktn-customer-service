@@ -1,7 +1,7 @@
 import CustomerService from './service/customer-service';
 import Api from './service/api';
 import { HttpStatus } from './http-status';
-import ApiException from './common/api-exception';
+import ApiException from './exception/api-exception';
 
 export interface Env {
 	DB: D1Database;
@@ -20,8 +20,9 @@ export default {
 		pathname = pathname.replace('/api/customer', '');
 
 		try {
-			const api = new Api();
-			api.setDatabase(env.DB);
+			const api = Api.newApiBuilder()
+				.setDatabase(env.DB)
+				.build();
 
 			const service = new CustomerService(api);
 
@@ -49,6 +50,7 @@ export default {
 			}
 		} catch (error) {
 			if (error instanceof ApiException) {
+				console.error(error);
 				return Response.json({
 					name: error.name,
 					message: error.message,

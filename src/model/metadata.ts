@@ -1,5 +1,4 @@
 import Address from './address';
-import JsonUtils from '../common/json-utils';
 
 export type MetadataState = {
 	address?: Address;
@@ -8,19 +7,13 @@ export type MetadataState = {
 export default class Metadata {
 	public readonly address: Address | undefined;
 
-	constructor(metadataState?: MetadataState) {
-		const state = metadataState ? metadataState : {};
-		this.address = state.address || undefined;
-	}
-
-	public static keys(): readonly string[] {
-		return Object.keys(new this()) as readonly string[];
+	constructor(state: MetadataState) {
+		this.address = state.address;
 	}
 
 	public static from(metadata: Record<string, any>) {
-		JsonUtils.validateObject(metadata, Metadata);
 		return this.newMetadataBuilder()
-			.setAddress(Address.from(metadata.address))
+			.setAddress(metadata.address ?? undefined)
 			.build();
 	}
 
@@ -29,17 +22,17 @@ export default class Metadata {
 	}
 
 	public static MetadataBuilder = class {
-		private state: MetadataState = {
-			address: undefined
-		};
+		private state: Partial<MetadataState> = {};
 
-		public setAddress(address: Address) {
-			this.state.address = address;
+		public setAddress(address: Record<string, any>) {
+			if (address) {
+				this.state.address = Address.from(address);
+			}
 			return this;
 		}
 
 		public build() {
-			return new Metadata(this.state);
+			return new Metadata(this.state as MetadataState);
 		}
 	};
 }

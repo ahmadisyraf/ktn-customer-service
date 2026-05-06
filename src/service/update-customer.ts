@@ -1,11 +1,12 @@
 import Api from './api';
 import Customer from '../model/customer';
 import { HttpStatus } from '../http-status';
-import ApiException from '../common/api-exception';
+import ApiException from '../exception/api-exception';
+import JsonUtils from '../common/json-utils';
 
 export default class UpdateCustomer {
 	private api: Api;
-	private customer = new Customer();
+	private customer: Customer | undefined;
 
 	constructor(api: Api) {
 		this.api = api;
@@ -30,18 +31,19 @@ export default class UpdateCustomer {
 			UPDATE customers
 			SET firstName = ?,
 					lastName  = ?,
+					metadata  = ?,
 					updatedAt = CURRENT_TIMESTAMP
 			WHERE email = ? RETURNING firstName, lastName, email, role, password, metadata, updatedAt, createdAt
 		`;
 
 		try {
 			const { results } = await this.api
-				.getBody()
 				.database
 				.prepare(sql)
 				.bind(
 					this.customer.firstName,
 					this.customer.lastName,
+					this.customer.metadata ? JsonUtils.toJSON(this.customer.metadata) : '{}',
 					this.customer.email
 				)
 				.run<any>();

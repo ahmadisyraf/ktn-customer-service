@@ -1,9 +1,8 @@
 import Api from './api';
 import Customer from '../model/customer';
 import { HttpStatus } from '../http-status';
-import ApiException from '../common/api-exception';
-import JsonUtils from '../common/./json-utils';
-import FieldException from '../common/field-exception';
+import ApiException from '../exception/api-exception';
+import FieldException from '../exception/field-exception';
 
 export default class LoadCustomer {
 	private api: Api;
@@ -43,7 +42,6 @@ export default class LoadCustomer {
 
 		try {
 			const result = await this.api
-				.getBody()
 				.database
 				.prepare(sql)
 				.bind(this.email)

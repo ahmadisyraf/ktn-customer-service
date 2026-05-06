@@ -1,18 +1,11 @@
 import Customer from '../model/customer';
 import Api from './api';
-import bcrypt from 'bcryptjs';
-import Address from '../model/address';
-import Metadata from '../model/metadata';
 import { HttpStatus } from '../http-status';
 import JsonUtils from '../common/./json-utils';
-import ApiException from '../common/api-exception';
-import FieldException from '../common/field-exception';
-import FieldNotExistException from '../common/field-not-exist-exception';
+import ApiException from '../exception/api-exception';
 
 export default class CreateCustomer {
-	private customer = new Customer();
-	private metadata = new Metadata();
-	private address = new Address();
+	private customer: Customer | undefined;
 	private api: Api;
 
 	constructor(api: Api) {
@@ -53,7 +46,6 @@ export default class CreateCustomer {
 
 		try {
 			const { results, meta } = await this.api
-				.getBody()
 				.database
 				.prepare(sql)
 				.bind(

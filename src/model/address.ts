@@ -1,11 +1,11 @@
 import JsonUtils from '../common/json-utils';
 
 export type AddressState = {
-	street?: string;
-	city?: string;
-	state?: string;
-	postcode?: string;
-	country?: string;
+	street: string | undefined;
+	city: string | undefined;
+	state: string | undefined;
+	postcode: string | undefined;
+	country: string | undefined;
 }
 
 export default class Address {
@@ -15,27 +15,21 @@ export default class Address {
 	public readonly postcode: string | undefined;
 	public readonly country: string | undefined;
 
-	constructor(addressState?: AddressState) {
-		const state = addressState ? addressState : {};
-		this.street = state.street || undefined;
-		this.city = state.city || undefined;
-		this.postcode = state.postcode || undefined;
-		this.country = state.country || undefined;
-		this.state = state.state || undefined;
-	}
-
-	public static keys(): readonly string[] {
-		return Object.keys(new this()) as readonly string[];
+	constructor(state: AddressState) {
+		this.street = state.street;
+		this.city = state.city;
+		this.postcode = state.postcode;
+		this.country = state.country;
+		this.state = state.state;
 	}
 
 	public static from(address: Record<string, any>) {
-		JsonUtils.validateObject(address, Address);
 		return this.newAddressBuilder()
-			.setStreet(address.street ?? undefined)
-			.setCity(address.city ?? undefined)
-			.setState(address.state ?? undefined)
-			.setPostcode(address.postcode ?? undefined)
-			.setCountry(address.country ?? undefined)
+			.setStreet(address.street)
+			.setCity(address.city)
+			.setState(address.state)
+			.setPostcode(address.postcode)
+			.setCountry(address.country)
 			.build();
 	}
 
@@ -44,41 +38,35 @@ export default class Address {
 	}
 
 	public static AddressBuilder = class {
-		private state: AddressState = {
-			street: undefined,
-			city: undefined,
-			state: undefined,
-			postcode: undefined,
-			country: undefined
-		};
+		private state: Partial<AddressState> = {};
 
-		public setStreet(street: string) {
+		public setStreet(street: string | undefined): this {
 			this.state.street = street;
 			return this;
 		}
 
-		public setCity(city: string) {
+		public setCity(city: string | undefined): this {
 			this.state.city = city;
 			return this;
 		}
 
-		public setState(state: string) {
+		public setState(state: string | undefined): this {
 			this.state.state = state;
 			return this;
 		}
 
-		public setPostcode(postcode: string) {
+		public setPostcode(postcode: string | undefined): this {
 			this.state.postcode = postcode;
 			return this;
 		}
 
-		public setCountry(country: string) {
+		public setCountry(country: string | undefined): this {
 			this.state.country = country;
 			return this;
 		}
 
 		public build() {
-			return new Address(this.state);
+			return new Address(this.state as AddressState);
 		}
 	};
 }

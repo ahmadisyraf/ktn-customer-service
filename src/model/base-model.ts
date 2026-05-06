@@ -11,10 +11,9 @@ export default class BaseModel {
 	public readonly createdAt: string | undefined;
 	public readonly metadata: Metadata | undefined;
 
-	constructor(baseState?: BaseState) {
-		const state = baseState ? baseState : {};
-		this.updatedAt = state.updatedAt || undefined;
-		this.createdAt = state.createdAt || undefined;
-		this.metadata = state.metadata || undefined;
+	constructor(state: BaseState) {
+		this.updatedAt = state.updatedAt;
+		this.createdAt = state.createdAt;
+		this.metadata = state.metadata;
 	}
 }
