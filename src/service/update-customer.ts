@@ -2,8 +2,6 @@ import Api from './api';
 import Customer from '../model/customer';
 import { HttpStatus } from '../http-status';
 import ApiException from '../common/api-exception';
-import JsonUtils from '../common/./json-utils';
-import Metadata from '../model/metadata';
 
 export default class UpdateCustomer {
 	private api: Api;
@@ -18,9 +16,7 @@ export default class UpdateCustomer {
 			throw new ApiException('Customer not found', { status: HttpStatus.BadRequest });
 		}
 
-		this.customer = Customer.from(customer, {});
-
-		console.log(this.customer);
+		this.customer = Customer.from(customer, { excludePassword: true });
 
 		return this;
 	}
@@ -51,7 +47,7 @@ export default class UpdateCustomer {
 				.run<any>();
 
 			const data = results[0];
-			const response = Customer.from(data, {});
+			const response = Customer.from(data, { excludePassword: true });
 
 			return Response.json(response, { status: HttpStatus.OK });
 		} catch (error) {

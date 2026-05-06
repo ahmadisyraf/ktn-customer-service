@@ -24,14 +24,7 @@ export default class CreateCustomer {
 			throw new ApiException('Customer not found!', { status: HttpStatus.BadRequest });
 		}
 
-		this.customer = Customer.newCustomerBuilder()
-			.setFirstName(customer.firstName)
-			.setLastName(customer.lastName)
-			.setEmail(customer.email)
-			.setPassword(customer.password)
-			.setRole(customer.role)
-			.setMetadata(Metadata.from(customer.metadata))
-			.build();
+		this.customer = Customer.from(customer);
 
 		return this;
 	}
@@ -55,7 +48,7 @@ export default class CreateCustomer {
 						 ?,
 						 ?,
 						 ? WHERE NOT EXISTS (SELECT 1 FROM customers WHERE email = ? LIMIT 1)
-			RETURNING firstName, lastName, email, role, password, metadata, updatedAt, createdAt
+			RETURNING firstName, lastName, email, role, metadata, updatedAt, createdAt
 		`;
 
 		try {
@@ -79,7 +72,7 @@ export default class CreateCustomer {
 			}
 
 			const data = results[0];
-			const response = Customer.from(data, {});
+			const response = Customer.from(data, { excludePassword: true });
 
 			return Response.json(response, { status: HttpStatus.OK });
 		} catch (error) {

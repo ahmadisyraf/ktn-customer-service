@@ -51,7 +51,7 @@ export default class LoadCustomer {
 
 			let response;
 			if (result) {
-				response = Customer.from(result, {});
+				response = Customer.from(result, { excludePassword: true });
 			}
 
 			return Response.json(response ? response : {}, { status: HttpStatus.OK });

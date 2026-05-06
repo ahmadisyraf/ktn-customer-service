@@ -17,18 +17,6 @@ export default class JsonUtils {
 		return JSON.parse(object);
 	}
 
-	public static mapToObject<T>(data: Record<string, any>, target: new () => T) {
-		if (!data) {
-			throw new ApiException('Unable to map to object, data parameter required');
-		}
-
-		const instance = new target();
-		Object.assign(instance as object, data);
-
-		return instance;
-	}
-
-
 	public static validateObject<T>(object: Record<string, any>, target: Class<T>) {
 		if (typeof target.keys !== 'function') {
 			throw new ApiException(`${target.name} don't have static keys() method`);
