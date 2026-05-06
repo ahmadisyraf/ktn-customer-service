@@ -13,8 +13,8 @@ export default class Metadata {
 		this.address = state.address || undefined;
 	}
 
-	public static keys() {
-		return ['address'] as const;
+	public static keys(): readonly string[] {
+		return Object.keys(new this()) as readonly string[];
 	}
 
 	public static from(metadata: Record<string, any>) {

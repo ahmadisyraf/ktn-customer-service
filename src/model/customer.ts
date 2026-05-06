@@ -14,6 +14,10 @@ export type CustomerState = BaseState & {
 	role: string,
 }
 
+export type CustomerOptions = {
+	excludePassword: boolean;
+}
+
 export default class Customer extends BaseModel {
 	public readonly firstName: string;
 	public readonly lastName: string;
@@ -33,10 +37,10 @@ export default class Customer extends BaseModel {
 	}
 
 	public static keys(): readonly string[] {
-		return ['firstName', 'lastName', 'email', 'password', 'role', 'metadata', 'updatedAt', 'createdAt'] as const;
+		return Object.keys(new this()) as readonly string[];
 	}
 
-	public static from(customer: Record<string, any>, { excludePassword = true }) {
+	public static from(customer: Record<string, any>, options?: CustomerOptions): Customer {
 		JsonUtils.validateObject(customer, Customer);
 		const metadata = typeof customer.metadata === 'string' ? JsonUtils.fromJSON(customer.metadata) : customer.metadata;
 		const builder = this.newCustomerBuilder()
@@ -48,7 +52,7 @@ export default class Customer extends BaseModel {
 			.setCreatedAt(customer.createdAt)
 			.setUpdatedAt(customer.updatedAt);
 
-		if (!excludePassword) { // Usually for get request
+		if (!options || options && !options.excludePassword) {
 			if (!customer.password) {
 				throw new FieldException('password');
 			}
